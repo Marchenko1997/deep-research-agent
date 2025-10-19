@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from agents import Agent
+from crewai import Agent
 
 HOW_MANY_SEARCHES = 5
 

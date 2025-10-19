@@ -3,7 +3,8 @@ from typing import Dict
 
 import sendgrid
 from sendgrid.helpers.mail import Email, Mail, Content, To
-from agents import Agent, function_tool
+from crewai import Agent
+from crewai.tools import tool as function_tool
 
 
 @function_tool

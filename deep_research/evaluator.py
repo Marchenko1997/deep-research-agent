@@ -1,4 +1,4 @@
-from agents import Agent
+from crewai import Agent
 from pydantic import BaseModel, Field
 
 INSTRUCTIONS = (

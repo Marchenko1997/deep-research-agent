@@ -1,4 +1,6 @@
-from agents import Agent, WebSearchTool, ModelSettings
+from crewai import Agent, ModelSettings
+from crewai_tools import WebSearchTool
+
 
 INSTRUCTIONS = (
     "You are a research assistant. Given a search term, you search the web for that term and "

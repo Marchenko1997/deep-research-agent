@@ -6,13 +6,15 @@ authors = [
     {name = "Halyna Marchenko", email = "marchenkohalyna888@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "gradio>=5.38.2",
     "pydantic>=2.11.7",
     "python-dotenv>=1.1.1",
     "sendgrid>=6.12.4",
     "openai>=1.97.1",
+    "crewai[tracing] (>=0.203.1,<0.204.0)",
+    "crewai-tools (>=0.76.0,<0.77.0)",
 ]
 
 [tool.poetry]
