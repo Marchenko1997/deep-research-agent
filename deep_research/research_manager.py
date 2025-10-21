@@ -1,63 +1,54 @@
 import asyncio
-from crewai import Runner
-from crewai import trace, gen_trace_id
-from search_agent import search_agent
-from planner_agent import planner_agent, WebSearchItem, WebSearchPlan
-from writer_agent import writer_agent, ReportData
-from email_agent import email_agent
-from evaluator import Evaluator, evaluator
+from crewai import Crew
+from deep_research.search_agent import search_agent
+from deep_research.planner_agent import planner_agent, WebSearchItem, WebSearchPlan
+from deep_research.writer_agent import writer_agent, ReportData
+from deep_research.email_agent import email_agent
+from deep_research.evaluator import Evaluator, evaluator
 
 
 class ResearchManager:
-
     async def run(self, query: str):
-        trace_id = gen_trace_id()
-        with trace("Research trace", trace_id=trace_id):
-            print(
-                f"View trace: https://platform.openai.com/traces/trace?trace_id={trace_id}"
-            )
-            yield f"View trace: https://platform.openai.com/traces/trace?trace_id={trace_id}"
+        print("=== Starting Deep Research ===")
+        yield "Starting research..."
 
-            print("Starting research...")
-            search_plan = await self.plan_searches(query)
-            yield "Searches planned, starting to search..."
+        search_plan = await self.plan_searches(query)
+        yield "Searches planned, starting to search..."
 
-            search_results = await self.perform_searches(search_plan)
-            yield "Searches complete, evaluating..."
+        search_results = await self.perform_searches(search_plan)
+        yield "Searches complete, evaluating..."
 
-            evaluation = await self.evaluate(search_results)
-            yield "Evaluation complete, writing report..."
+        evaluation = await self.evaluate(search_results)
+        yield "Evaluation complete, writing report..."
 
-            report = await self.write_report(query, search_results, evaluation)
-            yield "Report written, sending email..."
+        report = await self.write_report(query, search_results, evaluation)
+        yield "Report written, sending email..."
 
-            await self.send_email(report)
-            yield "Email sent, research complete"
+        await self.send_email(report)
+        yield "Email sent, research complete"
 
-            yield report.markdown_report
+        yield report.markdown_report
 
     async def plan_searches(self, query: str) -> WebSearchPlan:
         print("Planning searches...")
-        result = await Runner.run(
-            planner_agent,
-            f"Query: {query}",
-        
-        )
+        crew = Crew(agents=[planner_agent], tasks=[f"Query: {query}"], verbose=True)
+        result = crew.kickoff()
 
         print(f"Will perform {len(result.final_output.searches)} searches")
         return result.final_output_as(WebSearchPlan)
 
     async def perform_searches(self, search_plan: WebSearchPlan) -> list[str]:
-
         print("Searching...")
         num_completed = 0
 
-        tasks = [asyncio.create_task(self.search(item)) for item in search_plan.searches]
+        tasks = [
+            asyncio.create_task(self.search(item)) for item in search_plan.searches
+        ]
         results: list[str] = []
 
         for task in asyncio.as_completed(tasks):
             result = await task
-            if result is not None:
+            if result:
                 results.append(result)
             num_completed += 1
             print(f"Searching... {num_completed}/{len(tasks)} completed")
@@ -66,44 +57,45 @@ class ResearchManager:
         return results
 
     async def search(self, item: WebSearchItem) -> str | None:
-
-        input = f"Search term: {item.query}\nReason for searching: {item.reason}"
+        input_text = f"Search term: {item.query}\nReason for searching: {item.reason}"
         try:
-            result = await Runner.run(search_agent, input)
+            crew = Crew(agents=[search_agent], tasks=[input_text])
+            result = crew.kickoff()
             return str(result.final_output)
-        except Exception:
+        except Exception as e:
+            print(f"Search error: {e}")
             return None
 
     async def evaluate(self, search_results: list[str]) -> Evaluator:
         print("Evaluating search results...")
-        input = "Search results to evaluate:\n" + "\n\n".join(search_results)
-        result = await Runner.run(
-            evaluator,
-            input,
-        )
+        input_text = "Search results to evaluate:\n" + "\n\n".join(search_results)
+
+        crew = Crew(agents=[evaluator], tasks=[input_text])
+        result = crew.kickoff()
+
         print("Evaluation complete")
         return result.final_output_as(Evaluator)
 
-    async def write_report(self, query: str, search_results: list[str], evaluation: Evaluator) -> ReportData:
-        print("Thinking about report...")
-        input = (
+    async def write_report(
+        self, query: str, search_results: list[str], evaluation: Evaluator
+    ) -> ReportData:
+        print("Writing report...")
+
+        input_text = (
             f"Original query: {query}\n"
             f"Summarized search results: {search_results}\n"
             f"Evaluation: {evaluation}"
         )
-        result = await Runner.run(
-            writer_agent.
-            input,
-        )
+
+        crew = Crew(agents=[writer_agent], tasks=[input_text])
+        result = crew.kickoff()
+
         print("Finished writing report")
         return result.final_output_as(ReportData)
 
     async def send_email(self, report: ReportData) -> None:
-        print("Writing email...")
-        await Runner.run(
-            email_agent,
-            report.markdown_report,
-        )
+        print("Sending email...")
+        crew = Crew(agents=[email_agent], tasks=[report.markdown_report])
+        crew.kickoff()
         print("Email sent")
-
-        return report 
+        return report

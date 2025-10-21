@@ -3,8 +3,12 @@ from crewai import Agent
 
 HOW_MANY_SEARCHES = 5
 
-INSTRUCTIONS = f"You are a helpful research assistant. Given a query, come up with a set of web searches \
-to perform to best answer the query. Output {HOW_MANY_SEARCHES} terms to query for."
+INSTRUCTIONS = f"""
+You are a helpful research assistant.
+Given a query, come up with a set of web searches to perform
+to best answer the query.
+Output {HOW_MANY_SEARCHES} terms to query for.
+"""
 
 
 class WebSearchItem(BaseModel):
@@ -22,6 +26,9 @@ class WebSearchPlan(BaseModel):
 
 planner_agent = Agent(
     name="PlannerAgent",
+    role="Research Planner",
+    goal="Design an efficient plan of web searches to gather the most relevant information for a research query.",
+    backstory="An analytical AI expert specializing in structuring search tasks and identifying key information sources.",
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
     output_type=WebSearchPlan,

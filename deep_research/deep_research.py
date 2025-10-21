@@ -1,8 +1,13 @@
 import gradio as gr
-from dotenv import load_dotenv
-from research_manager import ResearchManager
 
-load_dotenv(override=True)
+from deep_research.research_manager import ResearchManager
+import os
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+load_dotenv(dotenv_path, override=True)
+
+print("✅ .env preloaded at package init")
 
 
 async def run(query: str):
