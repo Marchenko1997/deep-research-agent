@@ -38,8 +38,12 @@ INSTRUCTIONS = """You are able to send a nicely formatted HTML email based on a 
 You will be provided with a detailed report. You should use your tool to send one email, providing the 
 report converted into clean, well presented HTML with an appropriate subject line."""
 
+
 email_agent = Agent(
-    name="Email agent",
+    name="Email Agent",
+    role="Automated Email Assistant",
+    goal="Send summary reports via email in a clean HTML format.",
+    backstory="This agent formats research reports into professional HTML emails and sends them using SendGrid.",
     instructions=INSTRUCTIONS,
     tools=[send_email],
     model="gpt-4o-mini",
