@@ -9,14 +9,22 @@ from crewai.tools import tool as function_tool
 
 @function_tool
 def send_email(subject: str, html_body: str) -> Dict[str, str]:
-    sg = sendgrid.SendGridAPIClient(api_key = os.getenv("SENDGRID_API_KEY"))
+    """
+    Send an email using SendGrid with the given subject and HTML body.
+
+    Args:
+        subject (str): Subject line of the email.
+        html_body (str): The HTML content of the email.
+
+    Returns:
+        Dict[str, str]: A dictionary with the status of the operation.
+    """
+    sg = sendgrid.SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
 
     from_email = Email("marchenkohalyna888@gmail.com")
-
     to_email = To("marchenkohalyna888@gmail.com")
 
     content = Content("text/html", html_body)
-
     mail = Mail(from_email, to_email, subject, content).get()
 
     response = sg.client.mail.send.post(request_body=mail)
