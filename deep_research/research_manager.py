@@ -5,6 +5,7 @@ from deep_research.planner_agent import planner_agent, WebSearchItem, WebSearchP
 from deep_research.writer_agent import writer_agent, ReportData
 from deep_research.email_agent import email_agent
 from deep_research.evaluator import Evaluator, evaluator
+from crewai import Crew, Task
 
 
 class ResearchManager:
@@ -31,7 +32,19 @@ class ResearchManager:
 
     async def plan_searches(self, query: str) -> WebSearchPlan:
         print("Planning searches...")
-        crew = Crew(agents=[planner_agent], tasks=[f"Query: {query}"], verbose=True)
+
+        task = Task(
+            description=f"Query: {query}",
+            agent=planner_agent,
+            expected_output=WebSearchPlan,
+        )
+
+        crew = Crew(
+        agents=[planner_agent],
+        tasks=[task],
+        verbose=True
+        )
+
         result = crew.kickoff()
 
         print(f"Will perform {len(result.final_output.searches)} searches")

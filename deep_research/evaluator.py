@@ -1,6 +1,7 @@
 from crewai import Agent
 from pydantic import BaseModel, Field
 
+
 INSTRUCTIONS = (
     "You are an evaluation agent that assesses the quality of research results. "
     "You should evaluate whether the search results are comprehensive, relevant, and sufficient "
@@ -8,9 +9,10 @@ INSTRUCTIONS = (
     "- Relevance to the original query "
     "- Breadth and depth of information "
     "- Quality and reliability of sources "
-    "- Completeness of coverage "
-    "Provide a clear assessment with reasoning."
+    "- Completeness of coverage. "
+    "Provide a clear and structured assessment with reasoning."
 )
+
 
 
 class Evaluator(BaseModel):
@@ -22,7 +24,15 @@ class Evaluator(BaseModel):
     )
 
 
+
 evaluator = Agent(
+    role="Research Evaluator",
+    goal="Evaluate the quality, depth, and reliability of AI research results",  
+    backstory=(
+        "You are a meticulous and objective evaluator with a background in research methodology. "
+        "Your job is to assess whether the collected research data is comprehensive, unbiased, and relevant "
+        "before it is passed on to the report writing phase."
+    ),
     name="Evaluator",
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
